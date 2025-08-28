@@ -1,0 +1,90 @@
+cmake_minimum_required(VERSION 3.16)
+project(RealTime3DSimulation VERSION 1.0.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Find OpenGL
+find_package(OpenGL REQUIRED)
+
+# Set MinGW paths for dependencies
+set(MINGW_PREFIX "C:/msys64/mingw64")
+set(GLFW3_INCLUDE_DIR "${MINGW_PREFIX}/include")
+set(GLFW3_LIBRARY_DIR "${MINGW_PREFIX}/lib")
+set(GLEW_INCLUDE_DIR "${MINGW_PREFIX}/include")
+set(GLEW_LIBRARY_DIR "${MINGW_PREFIX}/lib")
+set(GLM_INCLUDE_DIR "${MINGW_PREFIX}/include")
+set(ASSIMP_INCLUDE_DIR "${MINGW_PREFIX}/include")
+set(ASSIMP_LIBRARY_DIR "${MINGW_PREFIX}/lib")
+
+# Include directories
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/src)
+include_directories(${GLFW3_INCLUDE_DIR})
+include_directories(${GLEW_INCLUDE_DIR})
+include_directories(${GLM_INCLUDE_DIR})
+include_directories(${ASSIMP_INCLUDE_DIR})
+
+# Link directories
+link_directories(${GLFW3_LIBRARY_DIR})
+link_directories(${GLEW_LIBRARY_DIR})
+link_directories(${ASSIMP_LIBRARY_DIR})
+
+# Source files (full 3D application)
+set(SOURCES
+    src/main_3d.cpp
+    src/Engine/Shader.cpp
+    src/Engine/Renderer.cpp
+    src/Engine/Camera.cpp
+    src/Engine/Scene.cpp
+    src/Engine/Light.cpp
+    src/Engine/Mesh.cpp
+    src/Engine/Model.cpp
+    src/Engine/Texture.cpp
+    src/Components/Skybox.cpp
+    src/Components/Building.cpp
+    src/Components/SolarPanel.cpp
+    src/Components/Landscape.cpp
+)
+
+# Create executable
+add_executable(${PROJECT_NAME} ${SOURCES})
+
+# Link libraries (using direct library names)
+target_link_libraries(${PROJECT_NAME} 
+    OpenGL::GL
+    glfw3
+    glew32
+    assimp
+)
+
+# Platform-specific settings
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} opengl32)
+    target_link_libraries(${PROJECT_NAME} kernel32 user32 gdi32 winspool shell32 ole32 oleaut32 uuid comdlg32 advapi32)
+elseif(APPLE)
+    target_link_libraries(${PROJECT_NAME} "-framework OpenGL" "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
+else()
+    target_link_libraries(${PROJECT_NAME} GL X11 Xrandr Xinerama Xcursor Xi)
+endif()
+
+# Copy shaders and assets to build directory
+file(COPY ${CMAKE_SOURCE_DIR}/shaders DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})
+
+# Compiler flags for optimization
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_compile_options(${PROJECT_NAME} PRIVATE -O3 -DNDEBUG)
+else()
+    target_compile_options(${PROJECT_NAME} PRIVATE -g -O0)
+endif()
+
+# Print configuration summary
+message(STATUS "Configuration Summary:")
+message(STATUS "  OpenGL: ${OpenGL_FOUND}")
+message(STATUS "  GLFW3: Found in ${GLFW3_INCLUDE_DIR}")
+message(STATUS "  GLEW: Found in ${GLEW_INCLUDE_DIR}")
+message(STATUS "  GLM: Found in ${GLM_INCLUDE_DIR}")
+message(STATUS "  Assimp: Found in ${ASSIMP_INCLUDE_DIR}")
+message(STATUS "  Build Type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "  Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")

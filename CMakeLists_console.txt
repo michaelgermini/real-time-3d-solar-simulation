@@ -1,0 +1,65 @@
+cmake_minimum_required(VERSION 3.16)
+project(OpenGLTest VERSION 1.0.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Find OpenGL
+find_package(OpenGL REQUIRED)
+
+# Try to find GLFW
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+    pkg_check_modules(GLFW3 QUIET glfw3)
+endif()
+
+if(NOT GLFW3_FOUND)
+    find_package(glfw3 QUIET)
+    if(NOT glfw3_FOUND)
+        message(WARNING "GLFW3 not found. You may need to install it.")
+        # Create a dummy target for now
+        add_library(glfw3 INTERFACE)
+    endif()
+endif()
+
+# Try to find GLEW
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+    pkg_check_modules(GLEW QUIET glew)
+endif()
+
+if(NOT GLEW_FOUND)
+    find_package(GLEW QUIET)
+    if(NOT GLEW_FOUND)
+        message(WARNING "GLEW not found. You may need to install it.")
+        # Create a dummy target for now
+        add_library(GLEW::GLEW INTERFACE)
+    endif()
+endif()
+
+# Create executable
+add_executable(OpenGLTest src/simple_test.cpp)
+
+# Link libraries
+target_link_libraries(OpenGLTest 
+    OpenGL::GL
+    glfw3
+    GLEW::GLEW
+)
+
+# Platform-specific settings
+if(WIN32)
+    target_link_libraries(OpenGLTest opengl32)
+    target_link_libraries(OpenGLTest kernel32 user32 gdi32 winspool shell32 ole32 oleaut32 uuid comdlg32 advapi32)
+elseif(APPLE)
+    target_link_libraries(OpenGLTest "-framework OpenGL" "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
+else()
+    target_link_libraries(OpenGLTest GL X11 Xrandr Xinerama Xcursor Xi)
+endif()
+
+# Print configuration summary
+message(STATUS "Configuration Summary:")
+message(STATUS "  OpenGL: ${OpenGL_FOUND}")
+message(STATUS "  GLFW3: ${glfw3_FOUND}")
+message(STATUS "  GLEW: ${GLEW_FOUND}")
+message(STATUS "  Build Type: ${CMAKE_BUILD_TYPE}")

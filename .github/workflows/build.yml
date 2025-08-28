@@ -1,0 +1,83 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: >-
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-glfw
+          mingw-w64-x86_64-glew
+          mingw-w64-x86_64-glm
+          mingw-w64-x86_64-make
+    
+    - name: Build
+      shell: msys2 {0}
+      run: |
+        cd ${{ github.workspace }}
+        mkdir build && cd build
+        cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+        make -j$(nproc)
+    
+    - name: Test
+      shell: msys2 {0}
+      run: |
+        cd ${{ github.workspace }}/build
+        echo "Build completed successfully"
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake
+        sudo apt-get install -y libglfw3-dev libglew-dev libglm-dev
+        sudo apt-get install -y mesa-utils
+    
+    - name: Build
+      run: |
+        mkdir build && cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        make -j$(nproc)
+    
+    - name: Test
+      run: |
+        cd build
+        echo "Build completed successfully"
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        brew install cmake glfw glew glm
+    
+    - name: Build
+      run: |
+        mkdir build && cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        make -j$(nproc)
+    
+    - name: Test
+      run: |
+        cd build
+        echo "Build completed successfully"

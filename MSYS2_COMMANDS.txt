@@ -1,0 +1,37 @@
+MSYS2 Installation Commands
+============================
+
+Copy and paste these commands into the MSYS2 terminal that just opened:
+
+1. Update MSYS2:
+pacman -Syu
+
+2. Install C++ compiler:
+pacman -S mingw-w64-x86_64-gcc
+
+3. Install CMake:
+pacman -S mingw-w64-x86_64-cmake
+
+4. Install OpenGL libraries:
+pacman -S mingw-w64-x86_64-glfw
+pacman -S mingw-w64-x86_64-glew
+pacman -S mingw-w64-x86_64-glm
+
+5. Install additional tools:
+pacman -S mingw-w64-x86_64-make
+pacman -S mingw-w64-x86_64-pkg-config
+
+6. Navigate to your project:
+cd /c/Users/mika/Desktop/Real-Time\ 3D\ Simulation\ with\ OpenGL/
+
+7. Make build script executable:
+chmod +x build.sh
+
+8. Build the project:
+./build.sh
+
+9. Run the 3D simulation:
+cd build
+./RealTime3DSimulation
+
+IMPORTANT: Press 'Y' when prompted to confirm installations.
